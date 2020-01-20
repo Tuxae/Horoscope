@@ -131,3 +131,31 @@ def find_star_colors(img):
     colors = distances.idxmin(axis=1).to_dict()
     
     return colors
+
+
+def parse_horoscope(img, threads=12, verbose=True):
+    """Parse texts and stars in a horoscope image and return info as a dict.
+    
+    Args:
+        img (PIL.Image or str): Image to read or path to image.
+        threads (int or None): Number of threads to use for reading blocks of text.
+            12 (number of text blocks to read) is empirically the fastest.
+            Default: 12.
+        verbose (bool): Whether to display a progressbar.
+            Default: True.
+    
+    Returns:
+        dict with zodiac signs as keys and (star_color, text) tuples as values.
+    """
+    if isinstance(img, str):
+        img = Image.open(img)
+    img.load()
+    
+    texts = read_texts(img, threads=threads, verbose=verbose)
+    stars = find_star_colors(img)
+    
+    keys = texts.keys()
+    values = zip(stars.values(), texts.values())
+    out = dict(zip(keys, values))
+    
+    return out
