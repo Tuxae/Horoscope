@@ -57,7 +57,7 @@ def read_crop(img, crop_region=None, pb=None):
 
 
 def read_texts(img, threads=12, verbose=True):
-    """Read an horoscope image and return dict of read contents.
+    """Read a horoscope image and return dict of read contents.
     
     Args:
         img (PIL.Image): Image to read.
@@ -87,17 +87,19 @@ def read_texts(img, threads=12, verbose=True):
     pb.close()
     
     return dict(zip(zodiac_signs, texts))
-    
-
-def find_star_color(rgb_array):
-    distances = {
-        color_name: np.mean((np.array(center)-rgb_array)**2)
-        for color_name, center in star_centers.items()
-    }
-    return pd.Series(distances).idxmin()
 
 
 def find_star_colors(img, verbose=True):
+    """Parse a horoscope image and return dict of star colors.
+    
+    Args:
+        img (PIL.Image): Image to read.
+        verbose (bool): Whether to display a progressbar.
+            Default: True.
+    
+    Returns:
+        dict with zodiac signs as keys and text ("bronze", "argent" or "or") as values.
+    """
     zodiac_signs = [region["name"] for region in regions]
     star_regions = [region["star"] for region in regions]
     
@@ -123,6 +125,7 @@ def find_star_colors(img, verbose=True):
         index = zodiac_signs
     )
     
+    # Get min distance per row
     colors = distances.idxmin(axis=1).to_dict()
     
     return colors
