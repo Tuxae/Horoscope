@@ -76,13 +76,17 @@ def read_texts(img, threads=12, verbose=True):
     
     pb = tqdm(total=n, desc="Reading horoscope", disable=not verbose)
     
-    with ThreadPoolExecutor(threads) as pool:
-        texts = list(pool.map(
-            read_crop,
-            repeat(img, n),
-            text_regions,
-            repeat(pb, n),
-        ))
+    if threads > 1:
+        with ThreadPoolExecutor(threads) as pool:
+            texts = list(pool.map(
+                read_crop,
+                repeat(img, n),
+                text_regions,
+                repeat(pb, n),
+            ))
+    
+    else:
+        texts = [read_crop(img, reg, pb) for reg in text_regions]
     
     pb.close()
     
