@@ -89,13 +89,11 @@ def read_texts(img, threads=12, verbose=True):
     return dict(zip(zodiac_signs, texts))
 
 
-def find_star_colors(img, verbose=True):
+def find_star_colors(img):
     """Parse a horoscope image and return dict of star colors.
     
     Args:
         img (PIL.Image): Image to read.
-        verbose (bool): Whether to display a progressbar.
-            Default: True.
     
     Returns:
         dict with zodiac signs as keys and text ("bronze", "argent" or "or") as values.
