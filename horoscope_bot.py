@@ -1,21 +1,21 @@
 # coding: utf8
 import discord
-import requests
+from discord.ext import commands
 import asyncio
 import aiohttp
-import bs4
-from bs4 import BeautifulSoup
+import datetime
 
 from my_constants import TOKEN, channel_horoscope
-from scraper import is_horoscope, get_last_image
+from scraper import is_horoscope, get_last_image, download_image
+
+bot = commands.Bot(command_prefix='$')
 
 class MyClient(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # create the background task and run it in the background
-        self.bg_task = self.loop.create_task(self.get_facebook_img())
-        self.old_tweets_url = []
+        # self.bg_task = self.loop.create_task(self.get_facebook_img())
 
     async def on_ready(self):
         print('Bot ready :-)')
@@ -27,13 +27,23 @@ class MyClient(discord.Client):
     async def get_facebook_img(self):
         await self.wait_until_ready()
         while not self.is_closed():
-            img_href = get_last_image()
-            img = requests.get(img_href)
-            if img.status_code == 200:
-                img = img.content
-                if is_horoscope(img):
-                    # TO DO
-            await asyncio.sleep(120) #tasks run every 120 seconds
+            img_href = await get_last_image()
+            filename = await download_image(img_href)
+            if is_horoscope(filename):
+                await self.get_channel(channel_horoscope).send(file=discord.File(filename))
+                await asyncio.sleep(10) 
+            await asyncio.sleep(300) #tasks run every 300 seconds
 
 client = MyClient()
+
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+    if message.content == '$test':
+        print("On m'appelle !")
+        img_href = await get_last_image()
+        filename = await download_image(img_href, filename="test.jpg")
+        await client.get_channel(channel_horoscope).send(file=discord.File(filename))
+
 client.run(TOKEN)

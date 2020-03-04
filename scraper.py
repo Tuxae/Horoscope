@@ -78,11 +78,14 @@ async def get_last_image(album_url = album_url):
             print(href)
             return href
 
-async def download_image(url):
+async def download_image(url, filename):
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as r:
             if r.status != 200:
                 return None
-            now = datetime.datetime.now()
-            with open(now.strftime("%Y-%m-%d")+".jpg", "wb") as f:
+            if not filename:
+                now = datetime.datetime.now()
+                filename = "images/" + now.strftime("%Y-%m-%d") + ".jpg"
+            with open(filename, "wb") as f:
                 f.write(await r.read())
+            return filename
