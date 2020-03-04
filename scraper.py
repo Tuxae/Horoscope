@@ -4,11 +4,16 @@ from PIL import Image
 from collections import Counter
 import numpy as np
 
+import datetime
+
+import io
+import aiohttp
+
 import requests
 import re
 
-album_URL = "https://www.facebook.com/pg/rtl2/photos/?tab=album&album_id=248389291078&ref=page_internal"
-mobile_URL = "https://mobile.facebook.com/rtl2/photos/a.248389291078/"
+album_url = "https://www.facebook.com/pg/rtl2/photos/?tab=album&album_id=248389291078&ref=page_internal"
+mobile_url = "https://mobile.facebook.com/rtl2/photos/a.248389291078/"
 get_original_image = "Afficher en taille réelle"
 
 firstPhotoID_re = re.compile(r'"firstPhotoID":"([0-9]*)"')
@@ -38,29 +43,46 @@ def is_horoscope(filename):
     except:
         print("File not accessible")
 
-def get_last_image(album_URL = album_URL):
+async def get_last_image(album_url = album_url):
     """ Get the last published image from
-    a Facebook album URL
+    a Facebook album url
     Input:
-        album_URL (str) : the URL to get the last image
+        album_url (str) : the url to get the last image
     Output:
         str : url of the image. Empty string if there is an error
     """
 
     nbr = 0
-    r = requests.get(album_URL)
     href = ""
+    
+    async with aiohttp.ClientSession() as session:
+        async with session.get(album_url) as r:
+            if r.status != 200:
+                return None
 
-    if r.status_code == 200:
-        # return the first (group(0)) matched 
-        # string with regex
-        s = firstPhotoID_re.search(r.text).group(0)
-        # extract the number from the string s
-        nbr = number_re.search(s).group(0)
-
-    if nbr != 0:
-        r = requests.get(mobile_URL+str(nbr))
-        if r.status_code == 200:
-            soup = BeautifulSoup(r.text)
+            # return the first (group(0)) matched 
+            # string with regex
+            s = firstPhotoID_re.search(await r.text()).group(0)
+            # extract the number from the string s
+            nbr = number_re.search(s).group(0)
+        
+            if nbr == 0:
+                return None
+        
+    async with aiohttp.ClientSession() as session:
+        async with session.get(mobile_url + str(nbr)) as r:
+            if r.status != 200:
+                return None
+            soup = BeautifulSoup(await r.text(), features="lxml")
             href = soup.find_all("a", text=get_original_image)[0].get("href")
-    return href
+            print(href)
+            return href
+
+async def download_image(url):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as r:
+            if r.status != 200:
+                return None
+            now = datetime.datetime.now()
+            with open(now.strftime("%Y-%m-%d")+".jpg", "wb") as f:
+                f.write(await r.read())
