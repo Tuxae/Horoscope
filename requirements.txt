@@ -30,7 +30,7 @@ python-apt==1.6.5+ubuntu0.2
 python-dateutil==2.8.1
 pytz==2019.3
 pyxdg==0.25
-PyYAML==3.12
+PyYAML==5.1
 requests==2.23.0
 scikit-learn==0.22.2.post1
 scipy==1.4.1
