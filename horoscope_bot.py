@@ -48,7 +48,7 @@ class MyClient(discord.Client):
                     #tasks run every 300 seconds
                     await asyncio.sleep(300) 
             time_to_wait = self.get_time_to_wait()
-            print("Wait " + str(time_to_wait.total_seconds()) " seconds.")
+            print(f"See you tomorrow, resuming activity in {time_to_wait.total_seconds())} seconds.")
             await asyncio.sleep(time_to_wait.total_seconds()) 
 
     async def on_message(self, message):
