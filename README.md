@@ -8,6 +8,10 @@ Functions to parse a horoscope image are found in `parse.py`.
 Parsing functionalities require installing Tesseract OCR on your computer as well as the `pytesseract` package.
 It also requires installing `pillow`.
 
+```
+sudo apt install tesseract-ocr tesseract-ocr-fra
+```
+
 ## Usage
 The general wrapper function you should use is `parse_horoscope`:
 
@@ -53,3 +57,10 @@ Usage example:
       'Le moment est venu de vous lancer dans les projets que vous laissiez de côté depuis un moment.'),
      'poisson': ('bronze',
       'Votre corps réclame une pause, ne tirez \\pas trop sur la corde.')}
+
+## Start the bot
+
+You can launch the bot in a screen :
+```
+python3 horoscope_bot.py
+```
