@@ -34,8 +34,7 @@ def is_horoscope(filename):
         total_pixels = 1181*250
         photo = Image.open(filename)
         width, height = photo.size
-        print(width)
-        print(height)
+        print(f"Image size : {width}x{height}") 
         if width != 1181:
             return False
         pixels = np.array(photo.crop(rtl2_header_coord).getdata())
