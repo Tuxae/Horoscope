@@ -29,7 +29,7 @@ class MyClient(discord.Client):
         super().__init__(*args, **kwargs)
 
         # create the background task and run it in the background
-        self.bg_task = self.loop.create_task(get_facebook_img())
+        self.bg_task = self.loop.create_task(self.job())
 
     async def on_ready(self):
         print('Bot ready :-)')
@@ -48,7 +48,7 @@ class MyClient(discord.Client):
                     #tasks run every 300 seconds
                     await asyncio.sleep(300) 
             time_to_wait = self.get_time_to_wait()
-            print(f"See you tomorrow, resuming activity in {time_to_wait.total_seconds())} seconds.")
+            print(f"See you tomorrow, resuming activity in {time_to_wait.total_seconds()} seconds.")
             await asyncio.sleep(time_to_wait.total_seconds()) 
 
     async def on_message(self, message):
