@@ -19,7 +19,7 @@ get_original_image = "Afficher en taille réelle"
 firstPhotoID_re = re.compile(r'"firstPhotoID":"([0-9]*)"')
 number_re = re.compile(r'\d+')
 
-rtl2_header_coord = (0, 0, 661, 140)
+rtl2_header_coord = (0, 0, 1181, 250)
 
 kmeans = pickle.load(open("horoscope_kmeans.pickle", "rb"))
 
@@ -31,13 +31,18 @@ def is_horoscope(filename):
         Bool : return True if it is an horoscope, False otherwise
     """
     try:
-        total_pixels = 661*140
+        total_pixels = 1181*250
         photo = Image.open(filename)
+        width, height = photo.size
+        print(width)
+        print(height)
+        if width != 1181:
+            return False
         pixels = np.array(photo.crop(rtl2_header_coord).getdata())
         occurences = Counter(kmeans.predict(pixels))
         # True Horoscope has the following value
-        # Counter({0: 41976, 1: 41676, 2: 8888})
-        true_prop   = np.array([41976, 41676, 8888])/total_pixels
+        #Counter({0: 134576, 1: 132231, 2: 28443})
+        true_prop   = np.array([134576, 132231, 28443])/total_pixels
         proportions = np.array([occ for occ in occurences.values()])/total_pixels
         return np.abs(np.sum(true_prop - proportions)) < 0.03
     except:
@@ -78,7 +83,7 @@ async def get_last_image(album_url = album_url):
             print(href)
             return href
 
-async def download_image(url, filename):
+async def download_image(url, filename=""):
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as r:
             if r.status != 200:
