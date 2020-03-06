@@ -22,6 +22,13 @@ star_centers = {
 }
 
 
+star_emojis = {
+    "or": ":first_place:",
+    "argent": ":second_place:",
+    "bronze": ":third_place:",
+}
+
+
 def read_crop(img, crop_region=None, pb=None):
     """Use Tesseract OCR to extract the text at given coordinates in the given image.
     
@@ -221,7 +228,8 @@ def reformat_horoscope(horoscope_dict):
         str: Sendable message.
     """
     def gen_bullet_point(sign, star, text):
-        return f"- **{sign.title()}** (_{star.title()}_): {text}"
+        emoji = star_emojis[star]
+        return f"- **{sign.title()}** {emoji}: {text}"
     
     bullet_points = [
         gen_bullet_point(sign, star, text)
