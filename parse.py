@@ -221,11 +221,11 @@ def reformat_horoscope(horoscope_dict):
         str: Sendable message.
     """
     def gen_bullet_point(sign, star, text):
-        out = f"- **{sign}** (_{star.title()}_): {text}"
+        return f"- **{sign.title()}** (_{star.title()}_): {text}"
     
     bullet_points = [
         gen_bullet_point(sign, star, text)
-        for sign, (star, text) in dict.items()
+        for sign, (star, text) in horoscope_dict.items()
     ]
     
     message = "\n".join(bullet_points)
