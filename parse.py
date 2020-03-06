@@ -1,6 +1,7 @@
 import json
 from concurrent.futures import ThreadPoolExecutor
 from itertools import repeat
+import re
 
 import pandas as pd
 pd.options.mode.chained_assignment = None
@@ -93,6 +94,25 @@ def read_texts(img, threads=12, verbose=True):
     return dict(zip(zodiac_signs, texts))
 
 
+def clean_up_text(text):
+    """Clean up a text string read by the OCR engine.
+    
+    Args:
+        text (str): Raw text produced by OCR.
+    
+    Returns:
+        str: Cleaned up text.
+    """
+    # Take care of most problems with a char whitelist.
+    acceptable_chars_regex = r"[\w ',\!\?\.]"
+    text = "".join(re.findall(acceptable_chars_regex, text))
+    
+    # Take care of underscores and issues with spaces.
+    text = text.replace("_", "").replace("  ", " ").strip()
+    
+    return text
+    
+
 def find_star_colors(img):
     """Parse a horoscope image and return dict of star colors.
     
@@ -178,7 +198,10 @@ def parse_horoscope(img, threads=12, verbose=True):
         img = Image.open(img)
     img.load()
     
+    # Read and clean up texts
     texts = read_texts(img, threads=threads, verbose=verbose)
+    texts = {sign: clean_up_text(text) for sign, text in texts.items()}
+    
     stars = find_star_colors(img)
     
     keys = texts.keys()
