@@ -209,3 +209,25 @@ def parse_horoscope(img, threads=12, verbose=True):
     out = dict(zip(keys, values))
     
     return out
+
+
+def reformat_horoscope(horoscope_dict):
+    """Reformat the horoscope dictionary into a string which displays well as a discord message.
+    
+    Args:
+        horoscope_dict (dict): Horoscope as a {sign:(star, text)} dictionary.
+    
+    Returns:
+        str: Sendable message.
+    """
+    def gen_bullet_point(sign, star, text):
+        out = f"- **{sign}** (_{star.title()}_): {text}"
+    
+    bullet_points = [
+        gen_bullet_point(sign, star, text)
+        for sign, (star, text) in dict.items()
+    ]
+    
+    message = "\n".join(bullet_points)
+    
+    return message
