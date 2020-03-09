@@ -1,6 +1,7 @@
 import json
 from concurrent.futures import ThreadPoolExecutor
 from itertools import repeat
+import re
 
 import pandas as pd
 pd.options.mode.chained_assignment = None
@@ -18,6 +19,13 @@ star_centers = {
     "bronze": [243.81, 181.88, 123.16],
     "argent": [190.07, 197.51 , 222.18],
     "or": [235.06, 205.52, 126.56],
+}
+
+
+star_emojis = {
+    "or": ":first_place:",
+    "argent": ":second_place:",
+    "bronze": ":third_place:",
 }
 
 
@@ -92,6 +100,25 @@ def read_texts(img, threads=12, verbose=True):
     
     return dict(zip(zodiac_signs, texts))
 
+
+def clean_up_text(text):
+    """Clean up a text string read by the OCR engine.
+    
+    Args:
+        text (str): Raw text produced by OCR.
+    
+    Returns:
+        str: Cleaned up text.
+    """
+    # Take care of most problems with a char whitelist.
+    acceptable_chars_regex = r"[\w ',\!\?\.]"
+    text = "".join(re.findall(acceptable_chars_regex, text))
+    
+    # Take care of underscores and issues with spaces.
+    text = text.replace("_", "").replace("  ", " ").strip()
+    
+    return text
+    
 
 def find_star_colors(img):
     """Parse a horoscope image and return dict of star colors.
@@ -178,7 +205,10 @@ def parse_horoscope(img, threads=12, verbose=True):
         img = Image.open(img)
     img.load()
     
+    # Read and clean up texts
     texts = read_texts(img, threads=threads, verbose=verbose)
+    texts = {sign: clean_up_text(text) for sign, text in texts.items()}
+    
     stars = find_star_colors(img)
     
     keys = texts.keys()
@@ -186,3 +216,26 @@ def parse_horoscope(img, threads=12, verbose=True):
     out = dict(zip(keys, values))
     
     return out
+
+
+def reformat_horoscope(horoscope_dict):
+    """Reformat the horoscope dictionary into a string which displays well as a discord message.
+    
+    Args:
+        horoscope_dict (dict): Horoscope as a {sign:(star, text)} dictionary.
+    
+    Returns:
+        str: Sendable message.
+    """
+    def gen_bullet_point(sign, star, text):
+        emoji = star_emojis[star]
+        return f"- **{sign.title()}** {emoji}: {text}"
+    
+    bullet_points = [
+        gen_bullet_point(sign, star, text)
+        for sign, (star, text) in horoscope_dict.items()
+    ]
+    
+    message = "\n".join(bullet_points)
+    
+    return message
