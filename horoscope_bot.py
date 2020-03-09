@@ -4,6 +4,8 @@ from discord.ext import commands
 import asyncio
 import aiohttp
 import datetime as dt
+import hashlib
+import os
 
 from my_constants import TOKEN, channel_horoscope
 from scraper import is_horoscope, get_last_image, download_image
@@ -23,6 +25,13 @@ def convert_timedelta(duration):
     seconds = (seconds % 60)
     return days, hours, minutes, seconds
 
+#https://stackoverflow.com/a/3431838
+def md5(fname):
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
 
 class MyClient(discord.Client):
     def __init__(self, *args, **kwargs):
@@ -57,7 +66,8 @@ class MyClient(discord.Client):
         if message.content == '/horoscope help':
             await self.get_channel(channel_horoscope).send(help)
         if message.content == '/horoscope test_download':
-            await self.try_get_horoscope()
+            test = await self.try_get_horoscope()
+            await self.get_channel(channel_horoscope).send("La dernière image n'est pas l'horoscope :-(")
         if message.content == '/horoscope time_to_wait':
             time_to_wait = self.get_time_to_wait()
             days, hours, minutes, seconds = convert_timedelta(time_to_wait)
@@ -71,18 +81,19 @@ class MyClient(discord.Client):
         print("Récupération du dernier lien.")
         img_href = await get_last_image()
         print("Téléchargement de l'image...")
-        filename = await download_image(img_href)
+        await download_image(img_href)
         print("Test de l'image : est-ce l'horoscope ?")
-        if is_horoscope(filename):
+        files = sorted(os.listdir(), reverse=True)
+        f1, f2 = "images/" + files[0], "images/" + files[1]
+        if is_horoscope(f1) and md5(f1) != md5(f2):
             print("C'est l'horoscope !")
             print("OCR : en cours.")
-            horoscope_text = parse_horoscope(filename)
+            horoscope_text = parse_horoscope(f1)
             print("OCR : terminé.")
-            await self.get_channel(channel_horoscope).send(file=discord.File(filename))
+            await self.get_channel(channel_horoscope).send(file=discord.File(f1))
             await self.get_channel(channel_horoscope).send("```"+ str(horoscope_text) + "```")
             return True
         print("Ce n'est pas l'horoscope")
-        await self.get_channel(channel_horoscope).send("La dernière image n'est pas l'horoscope :-(")
         return False
 
     def get_time_to_wait(self):
