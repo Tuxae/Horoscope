@@ -9,7 +9,7 @@ import os
 
 from my_constants import TOKEN, channel_horoscope
 from scraper import is_horoscope, get_last_image, download_image
-from parse import parse_horoscope
+from parse import parse_horoscope, reformat_horoscope
 
 
 help = """
@@ -88,10 +88,11 @@ class MyClient(discord.Client):
         if is_horoscope(f1) and md5(f1) != md5(f2):
             print("C'est l'horoscope !")
             print("OCR : en cours.")
-            horoscope_text = parse_horoscope(f1)
+            horoscope_dict = parse_horoscope(f1)
+            horoscope_str = reformat_horoscope(horoscope_dict)
             print("OCR : terminé.")
             await self.get_channel(channel_horoscope).send(file=discord.File(f1))
-            await self.get_channel(channel_horoscope).send("```"+ str(horoscope_text) + "```")
+            await self.get_channel(channel_horoscope).send(horoscope_str)
             return True
         print("Ce n'est pas l'horoscope")
         return False
