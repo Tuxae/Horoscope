@@ -67,7 +67,7 @@ class MyClient(discord.Client):
         if message.content == '/horoscope help':
             await self.get_channel(channel_horoscope).send(help)
         if message.content == '/horoscope test_download':
-            test = await self.try_get_horoscope()
+            test = await self.try_get_horoscope(test=True)
             if not test:
                 await self.get_channel(channel_horoscope).send("La dernière image n'est pas l'horoscope :-(")
         if message.content == '/horoscope last':
@@ -91,15 +91,19 @@ class MyClient(discord.Client):
                     str(minutes) + " minutes et "+
                     str(seconds) + " secondes avant d'avoir un nouveau horoscope.")
 
-    async def try_get_horoscope(self):
+    async def try_get_horoscope(self, test=False):
         print("Récupération du dernier lien.")
         img_href = await get_last_image()
         print("Téléchargement de l'image...")
-        filename = await download_image(img_href)
+        filename = await download_image(img_href, filename="images/test.jpg")
         print("Test de l'image : est-ce l'horoscope ?")
         files = sorted(os.listdir("images/"), reverse=True)
         f1, f2 = "images/" + files[0], "images/" + files[1]
-        if is_horoscope(f1) and md5(f1) != md5(f2):
+        if test:
+            f1, f2 = "images/test.jpg", "images/" + files[0]
+        # if it's a test,
+        # bypass the md5 verification
+        if is_horoscope(f1) and (md5(f1) != md5(f2) or test):
             print("C'est l'horoscope !")
             print("OCR : en cours.")
             horoscope_dict = parse_horoscope(f1)
