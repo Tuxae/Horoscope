@@ -21,6 +21,7 @@ star_centers = {
     "or": [235.06, 205.52, 126.56],
 }
 
+ball_radius = 28
 
 star_emojis = {
     "or": ":first_place:",
@@ -132,23 +133,21 @@ def find_star_colors(img):
     zodiac_signs = [region["name"] for region in regions]
     star_regions = [region["star"] for region in regions]
     
-    # Array of shape (12, 3) containing the RGB mean of each star region
-    means = np.array([
-        (
-            np.array(img.crop(star))
-            .reshape(-1, 3)
-            .mean(axis=0)
-        )
+    # List containing the vector of pixels of each star region
+    pixels = [
+        np.array(img.crop(star)).reshape(-1, 3)
         for star in star_regions
-    ])
+    ]
     
-    # DataFrame with zodiac signs as index, color names as columns and mean-square distance as values.
     distances = pd.DataFrame(
         {
-            color_name: np.mean(
-                (means - np.array(center))**2,
-                axis=1
-            )
+            color_name: [
+                np.mean(
+                    np.mean((px - center)**2, axis=-1)**(1/2)
+                    >= ball_radius
+                )
+                for px in pixels
+            ]
             for color_name, center in star_centers.items()
         },
         index = zodiac_signs
