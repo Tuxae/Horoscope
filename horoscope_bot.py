@@ -15,6 +15,7 @@ from parse import parse_horoscope, reformat_horoscope
 help = """
 ```Help
 /horoscope test_download  -- Récupère la dernière photo de RTL2 (horoscope ou pas)
+/horoscope last  -- Donne le dernier horoscope de RTL2 
 /horoscope time_to_wait   -- Il faut attendre encore longtemps ?
 ```
 """
@@ -67,7 +68,19 @@ class MyClient(discord.Client):
             await self.get_channel(channel_horoscope).send(help)
         if message.content == '/horoscope test_download':
             test = await self.try_get_horoscope()
-            await self.get_channel(channel_horoscope).send("La dernière image n'est pas l'horoscope :-(")
+            if not test:
+                await self.get_channel(channel_horoscope).send("La dernière image n'est pas l'horoscope :-(")
+        if message.content == '/horoscope last':
+            files = sorted(os.listdir("images/"), reverse=True)
+            if len(files) == 0:
+                await self.get_channel(channel_horoscope).send("Aucun horoscope en stock :-(")
+                return
+            print("OCR : en cours.")
+            horoscope_dict = parse_horoscope(files[0])
+            horoscope_str = reformat_horoscope(horoscope_dict)
+            print("OCR : terminé.")
+            await self.get_channel(channel_horoscope).send(file=discord.File(files[0]))
+            await self.get_channel(channel_horoscope).send(horoscope_str)
         if message.content == '/horoscope time_to_wait':
             time_to_wait = self.get_time_to_wait()
             days, hours, minutes, seconds = convert_timedelta(time_to_wait)
