@@ -76,10 +76,11 @@ class MyClient(discord.Client):
                 await self.get_channel(channel_horoscope).send("Aucun horoscope en stock :-(")
                 return
             print("OCR : en cours.")
-            horoscope_dict = parse_horoscope(files[0])
+            last_horoscope = "images/" + files[0]
+            horoscope_dict = parse_horoscope(last_horoscope)
             horoscope_str = reformat_horoscope(horoscope_dict)
             print("OCR : terminé.")
-            await self.get_channel(channel_horoscope).send(file=discord.File(files[0]))
+            await self.get_channel(channel_horoscope).send(file=discord.File(last_horoscope))
             await self.get_channel(channel_horoscope).send(horoscope_str)
         if message.content == '/horoscope time_to_wait':
             time_to_wait = self.get_time_to_wait()
