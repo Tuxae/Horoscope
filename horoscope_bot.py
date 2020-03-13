@@ -95,7 +95,10 @@ class MyClient(discord.Client):
         print("Récupération du dernier lien.")
         img_href = await get_last_image()
         print("Téléchargement de l'image...")
-        filename = await download_image(img_href, filename="images/0000-00-00_test.jpg")
+        if test:
+            filename = await download_image(img_href, filename="images/0000-00-00_test.jpg")
+        else:
+            filename = await download_image(img_href)
         print("Test de l'image : est-ce l'horoscope ?")
         files = sorted(os.listdir("images/"), reverse=True)
         f1, f2 = "images/" + files[0], "images/" + files[1]
