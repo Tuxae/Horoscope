@@ -95,12 +95,12 @@ class MyClient(discord.Client):
         print("Récupération du dernier lien.")
         img_href = await get_last_image()
         print("Téléchargement de l'image...")
-        filename = await download_image(img_href, filename="images/test.jpg")
+        filename = await download_image(img_href, filename="images/0000-00-00_test.jpg")
         print("Test de l'image : est-ce l'horoscope ?")
         files = sorted(os.listdir("images/"), reverse=True)
         f1, f2 = "images/" + files[0], "images/" + files[1]
         if test:
-            f1, f2 = "images/test.jpg", "images/" + files[0]
+            f1, f2 = "images/0000-00-00_test.jpg", "images/" + files[0]
         # if it's a test,
         # bypass the md5 verification
         if is_horoscope(f1) and (md5(f1) != md5(f2) or test):
