@@ -7,17 +7,17 @@ import datetime as dt
 import hashlib
 import os
 
-from my_constants import TOKEN, channel_horoscope
+from my_constants import TOKEN, IMG_FOLDER, channel_horoscope
 from scraper import is_horoscope, get_last_image, download_image
 from parse import parse_horoscope, reformat_horoscope
 from utils import convert_timedelta, md5
 
 
-help = """
+manual  = """
 ```Help
-/horoscope test_download  -- Récupère la dernière photo de RTL2 (horoscope ou pas)
-/horoscope last  -- Donne le dernier horoscope de RTL2 
-/horoscope time_to_wait   -- Il faut attendre encore longtemps ?
+<@!{id}> test  -- Récupère la dernière photo de RTL2 (horoscope ou pas)
+<@!{id}> last  -- Donne le dernier horoscope de RTL2 
+<@!{id}> time_to_wait   -- Il faut attendre encore longtemps ?
 ```
 """
 
@@ -29,6 +29,9 @@ class MyClient(discord.Client):
         self.bg_task = self.loop.create_task(self.job())
 
     async def on_ready(self):
+        if not os.path.isdir(IMG_FOLDER):
+            print(f"Création du dossier {IMG_FOLDER}")
+            os.mkdir(IMG_FOLDER)
         print('Bot ready :-)')
         print('Logged in as')
         print(self.user.name)
@@ -40,24 +43,24 @@ class MyClient(discord.Client):
         while not self.is_closed():
             # Monday : 0
             # Sunday : 6
-            if dt.datetime.today().weekday() <= 4 and 7 <= dt.datetime.today().hour <= 11:
+            today = dt.datetime.today()
+            if today.weekday() <= 4 and 7 <= today.hour <= 11:
                 while not await self.try_get_horoscope():
                     #tasks run every 300 seconds
                     await asyncio.sleep(300) 
             time_to_wait = self.get_time_to_wait()
-            print(f"See you tomorrow, resuming activity in {time_to_wait.total_seconds()} seconds.")
+            print(f"A demain, reprise de l'activité dans {time_to_wait.total_seconds()} secondes.")
             await asyncio.sleep(time_to_wait.total_seconds()) 
 
     async def on_message(self, message):
+        print(message.content)
         if message.author == client.user:
             return
-        if message.content == '/horoscope help':
-            await self.get_channel(channel_horoscope).send(help)
-        if message.content == '/horoscope test_download':
-            test = await self.try_get_horoscope(test=True)
-            if not test:
-                await self.get_channel(channel_horoscope).send("La dernière image n'est pas l'horoscope :-(")
-        if message.content == '/horoscope last':
+        if message.content == '<@!{}> help'.format(self.user.id):
+            await self.get_channel(channel_horoscope).send(manual.format(id=self.user.id))
+        if message.content == '<@!{}> test'.format(self.user.id):
+            await self.try_get_horoscope(force=True)
+        if message.content == '<@!{}> last'.format(self.user.id):
             files = sorted(os.listdir("images/"), reverse=True)
             if len(files) == 0:
                 await self.get_channel(channel_horoscope).send("Aucun horoscope en stock :-(")
@@ -69,7 +72,7 @@ class MyClient(discord.Client):
             print("OCR : terminé.")
             await self.get_channel(channel_horoscope).send(file=discord.File(last_horoscope))
             await self.get_channel(channel_horoscope).send(horoscope_str)
-        if message.content == '/horoscope time_to_wait':
+        if message.content == '<@!{}> time_to_wait':
             time_to_wait = self.get_time_to_wait()
             days, hours, minutes, seconds = convert_timedelta(time_to_wait)
             await self.get_channel(channel_horoscope).send("Il faut attendre encore " +
@@ -78,22 +81,23 @@ class MyClient(discord.Client):
                     str(minutes) + " minutes et "+
                     str(seconds) + " secondes avant d'avoir un nouveau horoscope.")
 
-    async def try_get_horoscope(self, test=False):
+    async def try_get_horoscope(self, force=False):
         print("Récupération du dernier lien.")
         img_href = await get_last_image()
         print("Téléchargement de l'image...")
-        if test:
+        if force:
             filename = await download_image(img_href, filename="images/0000-00-00_test.jpg")
         else:
             filename = await download_image(img_href)
-        print("Test de l'image : est-ce l'horoscope ?")
         files = sorted(os.listdir("images/"), reverse=True)
         f1, f2 = "images/" + files[0], "images/" + files[1]
-        if test:
+        # If force, send file without check
+        if force:
             f1, f2 = "images/0000-00-00_test.jpg", "images/" + files[0]
-        # if it's a test,
-        # bypass the md5 verification and is_horoscope
-        if is_horoscope(f1) and (md5(f1) != md5(f2) or test):
+            await self.get_channel(channel_horoscope).send(file=discord.File(f1))
+            return True
+        print("Test de l'image : est-ce l'horoscope ?")
+        if is_horoscope(f1) and md5(f1) != md5(f2):
             print("C'est l'horoscope !")
             print("OCR : en cours.")
             horoscope_dict = parse_horoscope(f1)
