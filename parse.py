@@ -121,11 +121,15 @@ def clean_up_text(text):
     return text
     
 
-def find_star_colors(img):
+def find_star_colors(img, robust=True, regions=regions):
     """Parse a horoscope image and return dict of star colors.
     
     Args:
         img (PIL.Image): Image to read.
+        robust (bool): Whether to use a more robust algorithm. With this enabled, processing time
+            goes from 30ms to about 300ms, but errors are less frequent.
+            Default: True.
+        regions (list): List of regions to use.
     
     Returns:
         dict with zodiac signs as keys and text ("bronze", "argent" or "or") as values.
@@ -139,22 +143,29 @@ def find_star_colors(img):
         for star in star_regions
     ]
     
-    distances = pd.DataFrame(
-        {
-            color_name: [
-                np.mean(
-                    np.mean((px - center)**2, axis=-1)**(1/2)
-                    >= ball_radius
-                )
-                for px in pixels
-            ]
-            for color_name, center in star_centers.items()
-        },
-        index = zodiac_signs
-    )
+    rng = range(31) if robust else [ball_radius]
+    
+    distances = [
+        pd.DataFrame(
+            {
+                color_name: [
+                    np.mean(
+                        np.mean((px - center)**2, axis=-1)**(1/2)
+                        >= ball_radius
+                    )
+                    for px in pixels
+                ]
+                for color_name, center in star_centers.items()
+            },
+            index = zodiac_signs
+        )
+        for ball_radius in rng
+    ]
+    
+    guesses = pd.concat([df.idxmin(axis=1) for df in distances], axis=1)
     
     # Get min distance per row
-    colors = distances.idxmin(axis=1).to_dict()
+    colors = guesses.mode(axis=1).squeeze().to_dict()
     
     return colors
 
