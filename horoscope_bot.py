@@ -8,10 +8,15 @@ import hashlib
 import os
 
 from my_constants import TOKEN, IMG_FOLDER, channel_horoscope
-from scraper import is_horoscope, get_last_image, download_image
+from scraper import get_last_image, download_image
 from parse import parse_horoscope, reformat_horoscope
 from utils import convert_timedelta, md5
 
+
+import pickle
+from PIL import Image
+from collections import Counter
+import numpy as np
 
 manual  = """
 ```Help
@@ -20,6 +25,49 @@ manual  = """
 <@!{id}> time to wait   -- Il faut attendre encore longtemps ?
 ```
 """
+
+# top,left,bottow,right
+true_width, true_height = 1181, 1716
+# True Horoscope has the following
+# color proportions 
+#Counter({0: 134576, 1: 132231, 2: 28443})
+# Tested on a header of size 1181*250
+crop_height = 250
+true_prop   = np.array([134576, 132231, 28443])/(true_width * crop_height)
+rtl2_header = np.array([0, 0, 1181, 250])
+
+kmeans = pickle.load(open("horoscope_kmeans.pickle", "rb"))
+
+def is_horoscope(filename):
+    """Check if it is a horoscope or not
+    Step 1 : check the picture size
+    Step 2 : use pretrained KMeans to compare color proporitons
+
+    Args:
+        filename (str) : path to horoscope
+
+    Return:
+        Bool : return True if it is an horoscope, False otherwise
+    """
+    assert os.path.isfile(filename), "Invalid file name"
+
+    # Step 1
+    photo = Image.open(filename)
+    width, height = photo.size
+
+    print(f"Image size : {width}x{height}") 
+    if abs(width/true_width - height/true_height) > 0.05 :
+        return False
+    print(f"Ratio de l'image correct.") 
+
+    # Step 2
+    k = width/true_width
+    pixels = np.array(photo.crop(tuple(k*rtl2_header)).getdata())
+    occurences = Counter(kmeans.predict(pixels))
+    proportions = np.array([occ for occ in occurences.values()])/(k*true_width * k*crop_height)
+    return np.abs(np.sum(true_prop - proportions)) < 0.03
+
+
 
 class MyClient(discord.Client):
     def __init__(self, *args, **kwargs):
@@ -164,5 +212,6 @@ class MyClient(discord.Client):
                 hour=7,minute=0,second=0,microsecond=0)
         return next_monday-today
 
-client = MyClient()
-client.run(TOKEN)
+if __name__ == "__main__":
+    client = MyClient()
+    client.run(TOKEN)

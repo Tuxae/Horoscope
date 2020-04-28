@@ -1,16 +1,15 @@
-from bs4 import BeautifulSoup
-import pickle
-from PIL import Image
-from collections import Counter
-import numpy as np
-
 import datetime
-
 import io
 import aiohttp
-
 import requests
 import re
+import pickle
+import numpy as np
+
+from bs4 import BeautifulSoup
+from PIL import Image
+from collections import Counter
+
 
 album_url = "https://www.facebook.com/pg/rtl2/photos/?tab=album&album_id=248389291078&ref=page_internal"
 mobile_url = "https://mobile.facebook.com/rtl2/photos/a.248389291078/"
@@ -19,41 +18,15 @@ get_original_image = "Afficher en taille réelle"
 firstPhotoID_re = re.compile(r'"firstPhotoID":"([0-9]*)"')
 number_re = re.compile(r'\d+')
 
-rtl2_header_coord = (0, 0, 1181, 250)
-
-kmeans = pickle.load(open("horoscope_kmeans.pickle", "rb"))
-
-def is_horoscope(filename):
-    """Use pretrained KMeans to test if it's an
-    horoscope or not
-
-    Output:
-        Bool : return True if it is an horoscope, False otherwise
-    """
-    try:
-        total_pixels = 1181*250
-        photo = Image.open(filename)
-        width, height = photo.size
-        print(f"Image size : {width}x{height}") 
-        if width != 1181:
-            return False
-        pixels = np.array(photo.crop(rtl2_header_coord).getdata())
-        occurences = Counter(kmeans.predict(pixels))
-        # True Horoscope has the following value
-        #Counter({0: 134576, 1: 132231, 2: 28443})
-        true_prop   = np.array([134576, 132231, 28443])/total_pixels
-        proportions = np.array([occ for occ in occurences.values()])/total_pixels
-        return np.abs(np.sum(true_prop - proportions)) < 0.03
-    except:
-        print("File not accessible")
 
 async def get_last_image(album_url = album_url):
     """ Get the last published image from
     a Facebook album url
-    Input:
+
+    Args:
         album_url (str) : the url to get the last image
-    Output:
-        str : url of the image. Empty string if there is an error
+    Return:
+        Str : empty string if an error occured. URL of the img otherwise
     """
 
     nbr = 0
@@ -83,6 +56,16 @@ async def get_last_image(album_url = album_url):
             return href
 
 async def download_image(url, filename=""):
+    """Download image from `url` and save
+    the file in JPEG.
+
+    Args:
+        url (str) : URL to get the img
+        filename (str) : save with the provided filename, use timestamp otherwise
+
+    Return:
+        Str : saved file name
+    """
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as r:
             if r.status != 200:
