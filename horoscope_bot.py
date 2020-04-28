@@ -38,7 +38,7 @@ rtl2_header = np.array([0, 0, 1181, 250])
 
 kmeans = pickle.load(open("horoscope_kmeans.pickle", "rb"))
 
-def is_horoscope(filename):
+def is_horoscope(filename, verbose=False):
     """Check if it is a horoscope or not
     Step 1 : check the picture size
     Step 2 : use pretrained KMeans to compare color proporitons
@@ -65,7 +65,11 @@ def is_horoscope(filename):
     pixels = np.array(photo.crop(tuple(k*rtl2_header)).getdata())
     occurences = Counter(kmeans.predict(pixels))
     proportions = np.array([occ for occ in occurences.values()])/(k*true_width * k*crop_height)
-    return np.abs(np.sum(true_prop - proportions)) < 0.03
+    if verbose:
+        print(proportions, "Image proportions")
+        print(true_prop, "True proportions")
+        print(np.sum(np.abs(true_prop - proportions)), "Distance")
+    return np.sum(np.abs(true_prop - proportions)) < 0.03
 
 
 
