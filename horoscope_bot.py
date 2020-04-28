@@ -10,6 +10,7 @@ import os
 from my_constants import TOKEN, channel_horoscope
 from scraper import is_horoscope, get_last_image, download_image
 from parse import parse_horoscope, reformat_horoscope
+from utils import convert_timedelta, md5
 
 
 help = """
@@ -19,20 +20,6 @@ help = """
 /horoscope time_to_wait   -- Il faut attendre encore longtemps ?
 ```
 """
-def convert_timedelta(duration):
-    days, seconds = duration.days, duration.seconds
-    hours = seconds // 3600
-    minutes = (seconds % 3600) // 60
-    seconds = (seconds % 60)
-    return days, hours, minutes, seconds
-
-#https://stackoverflow.com/a/3431838
-def md5(fname):
-    hash_md5 = hashlib.md5()
-    with open(fname, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash_md5.update(chunk)
-    return hash_md5.hexdigest()
 
 class MyClient(discord.Client):
     def __init__(self, *args, **kwargs):
@@ -53,7 +40,7 @@ class MyClient(discord.Client):
         while not self.is_closed():
             # Monday : 0
             # Sunday : 6
-            if dt.datetime.today().weekday() <= 4 and 9 <= dt.datetime.today().hour <= 14:
+            if dt.datetime.today().weekday() <= 4 and 7 <= dt.datetime.today().hour <= 11:
                 while not await self.try_get_horoscope():
                     #tasks run every 300 seconds
                     await asyncio.sleep(300) 
@@ -105,7 +92,7 @@ class MyClient(discord.Client):
         if test:
             f1, f2 = "images/0000-00-00_test.jpg", "images/" + files[0]
         # if it's a test,
-        # bypass the md5 verification
+        # bypass the md5 verification and is_horoscope
         if is_horoscope(f1) and (md5(f1) != md5(f2) or test):
             print("C'est l'horoscope !")
             print("OCR : en cours.")
@@ -127,7 +114,7 @@ class MyClient(discord.Client):
             day_to_wait = 3
         # sleep until tomorrow
         next_monday = today.replace(day=today.day+day_to_wait, 
-                hour=9,minute=0,second=0,microsecond=0)
+                hour=7,minute=0,second=0,microsecond=0)
         return next_monday-today
 
 client = MyClient()

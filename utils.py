@@ -18,3 +18,18 @@ def disp_image_with_rectangle(path, coords):
     ax.add_patch(rect)
     plt.show()
     return fig, ax
+
+def convert_timedelta(duration):
+    days, seconds = duration.days, duration.seconds
+    hours = seconds // 3600
+    minutes = (seconds % 3600) // 60
+    seconds = (seconds % 60)
+    return days, hours, minutes, seconds
+
+#https://stackoverflow.com/a/3431838
+def md5(fname):
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
