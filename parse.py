@@ -11,6 +11,8 @@ from tqdm import tqdm
 import pytesseract
 from PIL import Image
 
+true_width, true_height = 1181, 1716
+
 with open("regions.json", "r") as file:
     regions = json.load(file)
 
@@ -28,6 +30,24 @@ star_emojis = {
     "argent": ":second_place:",
     "bronze": ":third_place:",
 }
+
+
+def scale_regions(factor, regions=regions):
+    """Scale all the star and text regions in a list of regions by a constant factor.
+    
+    Args:
+        factor (float): Factor to scale by. Will round to the nearest integer.
+        regions (list): List of regions in the format of regions.json.
+            Default: regions.
+    """
+    out = []
+    for d in regions:
+        d = d.copy() # Don't modify the input in place
+        for key in ["star", "text"]:
+            d[key] = (np.array(d[key])*factor).tolist()
+        out.append(d)
+    
+    return out
 
 
 def read_crop(img, crop_region=None, pb=None):
@@ -65,7 +85,7 @@ def read_crop(img, crop_region=None, pb=None):
     return text
 
 
-def read_texts(img, threads=12, verbose=True):
+def read_texts(img, threads=12, regions=regions, verbose=True):
     """Read a horoscope image and return dict of read contents.
     
     Args:
@@ -73,6 +93,7 @@ def read_texts(img, threads=12, verbose=True):
         threads (int or None): Number of threads to use for multithreading.
             12 (number of text blocks to read) is empirically the fastest.
             Default: 12.
+        regions (list): List of regions to use.
         verbose (bool): Whether to display a progressbar.
             Default: True.
     
@@ -215,11 +236,19 @@ def parse_horoscope(img, threads=12, verbose=True):
         img = Image.open(img)
     img.load()
     
+    # Rescale regions if necessary
+    factor =  img.width/true_width
+    print("scale factor:", factor)
+    if factor != 1:
+        scaled_regions = scale_regions(factor, regions)
+    else:
+        scaled_regions = regions
+    
     # Read and clean up texts
-    texts = read_texts(img, threads=threads, verbose=verbose)
+    texts = read_texts(img, threads=threads, regions=scaled_regions, verbose=verbose)
     texts = {sign: clean_up_text(text) for sign, text in texts.items()}
     
-    stars = find_star_colors(img)
+    stars = find_star_colors(img, regions=scaled_regions, robust=True)
     
     keys = texts.keys()
     values = zip(stars.values(), texts.values())
