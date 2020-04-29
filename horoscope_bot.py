@@ -193,7 +193,7 @@ class MyClient(discord.Client):
             f2 = IMG_FOLDER + "/" + files[1]
 
         print("Test de l'image : est-ce l'horoscope ?")
-        if is_horoscope(f1) and (f2 and md5(f1) != md5(f2)):
+        if is_horoscope(f1) and (md5(f1) != md5(f2)):
             print("C'est l'horoscope !")
             await self.parse_and_send_horoscope(f1)
             return True

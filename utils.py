@@ -1,3 +1,5 @@
+import hashlib
+import os
 from matplotlib import pyplot as plt
 from matplotlib import patches
 from PIL import Image
@@ -29,7 +31,9 @@ def convert_timedelta(duration):
 #https://stackoverflow.com/a/3431838
 def md5(fname):
     hash_md5 = hashlib.md5()
-    with open(fname, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash_md5.update(chunk)
-    return hash_md5.hexdigest()
+    if os.path.isfile(fname):
+        with open(fname, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash_md5.update(chunk)
+        return hash_md5.hexdigest()
+    return None
