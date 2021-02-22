@@ -1,5 +1,5 @@
 # Horoscope scraping
-Empty for now.
+Details are available in ``scraper.py``. It's mainly based on mobile web app to ease web scraping.
 
 # Horoscope parsing
 Functions to parse a horoscope image are found in `parse.py`.
