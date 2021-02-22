@@ -22,7 +22,6 @@ manual  = """
 ```Help
 <@!{id}> test  -- Récupère la dernière photo de RTL2 (horoscope ou pas)
 <@!{id}> last  -- Donne le dernier horoscope de RTL2 
-<@!{id}> time to wait   -- Il faut attendre encore longtemps ?
 ```
 """
 
@@ -92,11 +91,11 @@ class MyClient(discord.Client):
         print(self.user.id)
         print('------')
 
-    async def job(self, period=300, days=[0,1,2,3,4], hours=[7,8,9,10,11,12]):
-        """ Job to run evey `period` seconds,
+    async def job(self, fetch_interval=300, days=[0,1,2,3,4], hours=[7,8,9,10,11,12]):
+        """ Job to run evey `fetch_interval` seconds,
         each day in days, between hours
         Args:
-            period (int) : run job every `period` seconds
+            fetch_interval (int) : run job every `fetch_interval` seconds
             days (list of int): day to fetch horoscope
             hours (list of hour) : (whole) hour to fetch horoscope
 
@@ -108,16 +107,18 @@ class MyClient(discord.Client):
         
         assert max(days) <= 6, "Need number between 0 and 6"
         assert min(days) >= 0, "Need number between 0 and 6"
-        assert max(hours) <= 23, "Need number between 0 and 24"
-        assert min(hours) >= 0, "Need number between 0 and 24"
+
+        assert max(hours) <= 23, "Need number between 0 and 23"
+        assert min(hours) >= 0, "Need number between 0 and 23"
 
         while not self.is_closed():
             today = dt.datetime.today()
-            if today.weekday() in days and today.hour in hours:
-                while not await self.fetch_new_horoscope():
-                    await asyncio.sleep(period) 
-            time_to_wait = self.get_time_to_wait().total_seconds()
-            print(f"A demain, reprise de l'activité dans {time_to_wait} secondes.")
+            while today.weekday() in days and today.hour in hours and not await self.fetch_new_horoscope():
+                # while (it's time to fetch horoscope) AND (the horoscope has not been published yet)
+                # wait fetch_interval to not spam Facebook
+                await asyncio.sleep(fetch_interval) 
+            time_to_wait = self.get_time_to_wait(hours).total_seconds()
+            print(f"Reprise de l'activité dans {time_to_wait} secondes.")
             await asyncio.sleep(time_to_wait)
 
     def command(self, cmd):
@@ -144,15 +145,6 @@ class MyClient(discord.Client):
                 return
             horoscope_img = IMG_FOLDER + "/" + files[0]
             await self.parse_and_send_horoscope(horoscope_img)
-
-        if message.content == self.command("time to wait"):
-            time_to_wait = self.get_time_to_wait()
-            days, hours, minutes, seconds = convert_timedelta(time_to_wait)
-            await self.get_channel(channel_horoscope).send("Il faut attendre encore " +
-                    str(days) + " jours, " +
-                    str(hours) + " heures, " +
-                    str(minutes) + " minutes et "+
-                    str(seconds) + " secondes avant d'avoir un nouveau horoscope.")
 
     async def parse_and_send_horoscope(self, filename):
         """Parse the image and send the image and the text
@@ -200,21 +192,19 @@ class MyClient(discord.Client):
         print("Ce n'est pas l'horoscope")
         return False
 
-    def get_time_to_wait(self):
+    def get_time_to_wait(self, hours):
         """How many time to wait before checking
         for a new horoscope ?
         """
 
-        time_to_wait = 0
         today = dt.datetime.today()
-        day_to_wait = 1
-        if dt.datetime.today().weekday() == 4:
-            # it's Friday -> wait two days
-            day_to_wait = 3
-        # sleep until tomorrow
-        next_monday = today.replace(day=today.day+day_to_wait, 
-                hour=7,minute=0,second=0,microsecond=0)
-        return next_monday-today
+        # Wait until tomorrow
+        days_to_wait = 1
+        if today.weekday() == 4:
+            # it's Friday -> wait two more days
+            days_to_wait += 2
+        next_day = today.replace(hour=hours[0],minute=0,second=0,microsecond=0) + dt.timedelta(days=days_to_wait)
+        return next_day-today
 
 if __name__ == "__main__":
     client = MyClient()
