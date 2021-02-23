@@ -22,6 +22,7 @@ manual  = """
 ```Help
 <@!{id}> test  -- Récupère la dernière photo de RTL2 (horoscope ou pas)
 <@!{id}> last  -- Donne le dernier horoscope de RTL2 
+<@!{id}> download  <URL> -- Télécharge l'image via l'URL donnée en argument et vérifie s'il s'agit de l'horoscope de RTL2 
 ```
 """
 
@@ -138,6 +139,11 @@ class MyClient(discord.Client):
         if message.content == self.command("test"):
             await self.fetch_new_horoscope(force=True)
 
+        if message.content.startswith("download"):
+            img_href = message.content.split(" ")[1]
+            if img_href.startswith("http"):
+                await self.fetch_new_horoscope(img_href=img_href)
+
         if message.content == self.command("last"):
             files = sorted(os.listdir(IMG_FOLDER), reverse=True)
             if len(files) == 0:
@@ -157,7 +163,7 @@ class MyClient(discord.Client):
         await self.get_channel(channel_horoscope).send(file=discord.File(filename))
         await self.get_channel(channel_horoscope).send(horoscope_str)
 
-    async def fetch_new_horoscope(self, force=False):
+    async def fetch_new_horoscope(self, img_href=None, force=False):
         """Get last image from RTL2 Facebook page,
         check if it's a new horoscope (using md5) 
         and send the file on Discord
@@ -166,9 +172,11 @@ class MyClient(discord.Client):
                            and send it as it is
         """
 
-        print("Récupération du dernier lien.")
-        img_href = await get_last_image()
-        print("Téléchargement de l'image...")
+        print("[" + dt.datetime.now().ctime() + "] - Fetch Horoscope")
+        if not img_href:
+            print("Récupération du dernier lien.")
+            img_href = await get_last_image()
+            print("Téléchargement de l'image...")
 
         if force:
             filename = await download_image(img_href, filename=IMG_FOLDER + "/" + "9999-99-99_test.jpg")
