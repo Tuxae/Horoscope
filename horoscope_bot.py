@@ -142,7 +142,7 @@ class MyClient(discord.Client):
         if message.content.startswith(self.command("download")):
             img_href = message.content.split(" ")[-1]
             if img_href.startswith("http") and await self.fetch_new_horoscope(img_href=img_href):
-                time_to_wait = self.get_time_to_wait(hours).total_seconds()
+                time_to_wait = self.get_time_to_wait([9,10,11]).total_seconds()
                 print("[" + dt.datetime.now().ctime() + "] - " + f"Reprise de l'activité dans {time_to_wait} secondes.")
                 await asyncio.sleep(time_to_wait)
 
