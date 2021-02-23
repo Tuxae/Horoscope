@@ -21,15 +21,15 @@ import numpy as np
 manual  = """
 ```Help
 <@!{id}> test  -- Récupère la dernière photo de RTL2 (horoscope ou pas)
-<@!{id}> last  -- Donne le dernier horoscope de RTL2 
-<@!{id}> download  <URL> -- Télécharge l'image via l'URL donnée en argument et vérifie s'il s'agit de l'horoscope de RTL2 
+<@!{id}> last  -- Donne le dernier horoscope de RTL2
+<@!{id}> download  <URL> -- Télécharge l'image via l'URL donnée en argument et vérifie s'il s'agit de l'horoscope de RTL2
 ```
 """
 
 # top,left,bottow,right
 true_width, true_height = 1181, 1716
 # True Horoscope has the following
-# color proportions 
+# color proportions
 #Counter({0: 134576, 1: 132231, 2: 28443})
 # Tested on a header of size 1181*250
 crop_height = 250
@@ -55,10 +55,10 @@ def is_horoscope(filename, verbose=False):
     photo = Image.open(filename)
     width, height = photo.size
 
-    print(f"Image size : {width}x{height}") 
+    print(f"Image size : {width}x{height}")
     if abs(width/true_width - height/true_height) > 0.05 :
         return False
-    print(f"Ratio de l'image correct.") 
+    print(f"Ratio de l'image correct.")
 
     # Step 2
     k = width/true_width
@@ -86,13 +86,13 @@ class MyClient(discord.Client):
             print(f"Création du dossier {IMG_FOLDER}")
             os.mkdir(IMG_FOLDER)
 
-        print('Bot ready :-)')
+        print("[" + dt.datetime.now().ctime() + "] - Bot ready :-)")
         print('Logged in as')
         print(self.user.name)
         print(self.user.id)
         print('------')
 
-    async def job(self, fetch_interval=300, days=[0,1,2,3,4], hours=[7,8,9,10,11,12]):
+    async def job(self, fetch_interval=300, days=[0,1,2,3,4], hours=[9,10,11]):
         """ Job to run evey `fetch_interval` seconds,
         each day in days, between hours
         Args:
@@ -105,7 +105,7 @@ class MyClient(discord.Client):
         and between 10 and 13 hours.
         """
         await self.wait_until_ready()
-        
+
         assert max(days) <= 6, "Need number between 0 and 6"
         assert min(days) >= 0, "Need number between 0 and 6"
 
@@ -117,9 +117,9 @@ class MyClient(discord.Client):
             while today.weekday() in days and today.hour in hours and not await self.fetch_new_horoscope():
                 # while (it's time to fetch horoscope) AND (the horoscope has not been published yet)
                 # wait fetch_interval to not spam Facebook
-                await asyncio.sleep(fetch_interval) 
+                await asyncio.sleep(fetch_interval)
             time_to_wait = self.get_time_to_wait(hours).total_seconds()
-            print(f"Reprise de l'activité dans {time_to_wait} secondes.")
+            print("[" + dt.datetime.now().ctime() + "] - " + f"Reprise de l'activité dans {time_to_wait} secondes.")
             await asyncio.sleep(time_to_wait)
 
     def command(self, cmd):
@@ -139,10 +139,12 @@ class MyClient(discord.Client):
         if message.content == self.command("test"):
             await self.fetch_new_horoscope(force=True)
 
-        if message.content.startswith("download"):
-            img_href = message.content.split(" ")[1]
-            if img_href.startswith("http"):
-                await self.fetch_new_horoscope(img_href=img_href)
+        if message.content.startswith(self.command("download")):
+            img_href = message.content.split(" ")[-1]
+            if img_href.startswith("http") and if await self.fetch_new_horoscope(img_href=img_href):
+                time_to_wait = self.get_time_to_wait(hours).total_seconds()
+                print("[" + dt.datetime.now().ctime() + "] - " + f"Reprise de l'activité dans {time_to_wait} secondes.")
+                await asyncio.sleep(time_to_wait)
 
         if message.content == self.command("last"):
             files = sorted(os.listdir(IMG_FOLDER), reverse=True)
@@ -165,9 +167,11 @@ class MyClient(discord.Client):
 
     async def fetch_new_horoscope(self, img_href=None, force=False):
         """Get last image from RTL2 Facebook page,
-        check if it's a new horoscope (using md5) 
+        check if it's a new horoscope (using md5)
         and send the file on Discord
         Args:
+            img_href (str) : if not None, download the image
+                           from <img_href> url
             force (bool) : if True, download the last image
                            and send it as it is
         """
@@ -182,10 +186,10 @@ class MyClient(discord.Client):
             filename = await download_image(img_href, filename=IMG_FOLDER + "/" + "9999-99-99_test.jpg")
             await self.get_channel(channel_horoscope).send(file=discord.File(filename))
             return True
-        
+
         filename = await download_image(img_href)
         files = sorted(os.listdir(IMG_FOLDER + "/"), reverse=True)
-            
+
         f1 = IMG_FOLDER + "/" + files[0]
         f2 = ""
 
