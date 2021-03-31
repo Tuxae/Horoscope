@@ -6,12 +6,12 @@ import aiohttp
 import datetime as dt
 import hashlib
 import os
+import pytz
 
 from my_constants import TOKEN, IMG_FOLDER, channel_horoscope
 from scraper import get_last_image, download_image
 from parse import parse_horoscope, reformat_horoscope
 from utils import convert_timedelta, md5
-
 
 import pickle
 from PIL import Image
@@ -25,6 +25,8 @@ manual  = """
 <@!{id}> download  <URL> -- Télécharge l'image via l'URL donnée en argument et vérifie s'il s'agit de l'horoscope de RTL2
 ```
 """
+
+tz_paris = pytz.timezone("Europe/Paris")
 
 # top,left,bottow,right
 true_width, true_height = 1181, 1716
@@ -86,13 +88,13 @@ class MyClient(discord.Client):
             print(f"Création du dossier {IMG_FOLDER}")
             os.mkdir(IMG_FOLDER)
 
-        print("[" + dt.datetime.now().ctime() + "] - Bot ready :-)")
+        print("[" + dt.datetime.now().astimezone(tz_paris).ctime() + "] - Bot ready :-)")
         print('Logged in as')
         print(self.user.name)
         print(self.user.id)
         print('------')
 
-    async def job(self, fetch_interval=300, days=[0,1,2,3,4], hours=[9,10,11]):
+    async def job(self, fetch_interval=300, days=[0,1,2,3,4], hours=[10,11,12]):
         """ Job to run evey `fetch_interval` seconds,
         each day in days, between hours
         Args:
@@ -113,13 +115,13 @@ class MyClient(discord.Client):
         assert min(hours) >= 0, "Need number between 0 and 23"
 
         while not self.is_closed():
-            today = dt.datetime.today()
+            today = dt.datetime.today().astimezone(tz_paris)
             while today.weekday() in days and today.hour in hours and not await self.fetch_new_horoscope():
                 # while (it's time to fetch horoscope) AND (the horoscope has not been published yet)
                 # wait fetch_interval to not spam Facebook
                 await asyncio.sleep(fetch_interval)
             time_to_wait = self.get_time_to_wait(hours).total_seconds()
-            print("[" + dt.datetime.now().ctime() + "] - " + f"Reprise de l'activité dans {time_to_wait} secondes.")
+            print("[" + dt.datetime.now().astimezone(tz_paris).ctime() + "] - " + f"Reprise de l'activité dans {time_to_wait} secondes.")
             await asyncio.sleep(time_to_wait)
 
     def command(self, cmd):
@@ -142,8 +144,8 @@ class MyClient(discord.Client):
         if message.content.startswith(self.command("download")):
             img_href = message.content.split(" ")[-1]
             if img_href.startswith("http") and await self.fetch_new_horoscope(img_href=img_href):
-                time_to_wait = self.get_time_to_wait([9,10,11]).total_seconds()
-                print("[" + dt.datetime.now().ctime() + "] - " + f"Reprise de l'activité dans {time_to_wait} secondes.")
+                time_to_wait = self.get_time_to_wait([10,11,12]).total_seconds()
+                print("[" + dt.datetime.now().astimezone(tz_paris).ctime() + "] - " + f"Reprise de l'activité dans {time_to_wait} secondes.")
                 await asyncio.sleep(time_to_wait)
 
         if message.content == self.command("last"):
@@ -176,7 +178,7 @@ class MyClient(discord.Client):
                            and send it as it is
         """
 
-        print("[" + dt.datetime.now().ctime() + "] - Fetch Horoscope")
+        print("[" + dt.datetime.now().astimezone(tz_paris).ctime() + "] - Fetch Horoscope")
         if not img_href:
             print("Récupération du dernier lien.")
             img_href = await get_last_image()
@@ -209,7 +211,7 @@ class MyClient(discord.Client):
         for a new horoscope ?
         """
 
-        today = dt.datetime.today()
+        today = dt.datetime.today().astimezone(tz_paris)
         # Wait until tomorrow
         days_to_wait = 1
         if today.weekday() == 4:
