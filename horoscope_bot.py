@@ -20,9 +20,9 @@ import numpy as np
 
 manual  = """
 ```Help
-<@!{id}> test  -- Récupère la dernière photo de RTL2 (horoscope ou pas)
-<@!{id}> last  -- Donne le dernier horoscope de RTL2
-<@!{id}> download  <URL> -- Télécharge l'image via l'URL donnée en argument et vérifie s'il s'agit de l'horoscope de RTL2
+<@{id}> test  -- Récupère la dernière photo de RTL2 (horoscope ou pas)
+<@{id}> last  -- Donne le dernier horoscope de RTL2
+<@{id}> download  <URL> -- Télécharge l'image via l'URL donnée en argument et vérifie s'il s'agit de l'horoscope de RTL2
 ```
 """
 
@@ -94,7 +94,7 @@ class MyClient(discord.Client):
         print(self.user.id)
         print('------')
 
-    async def job(self, fetch_interval=300, days=[0,1,2,3,4], hours=[10,11,12]):
+    async def job(self, fetch_interval=300, days=[0,1,2,3,4], hours=[10,11,12,13]):
         """ Job to run evey `fetch_interval` seconds,
         each day in days, between hours
         Args:
@@ -126,7 +126,7 @@ class MyClient(discord.Client):
 
     def command(self, cmd):
         """Wrapper for bot prefix"""
-        return f"<@!{self.user.id}> " + str(cmd)
+        return f"<@{self.user.id}> " + str(cmd)
 
     async def on_message(self, message):
         """Handle messages
@@ -161,7 +161,7 @@ class MyClient(discord.Client):
         found through OCR
         """
         print("OCR : en cours.")
-        horoscope_dict = parse_horoscope(filename)
+        horoscope_dict = parse_horoscope(filename, threads=1)
         horoscope_str = reformat_horoscope(horoscope_dict)
         print("OCR : terminé.")
         await self.get_channel(channel_horoscope).send(file=discord.File(filename))
