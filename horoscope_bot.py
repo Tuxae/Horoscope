@@ -1,24 +1,21 @@
 # coding: utf8
 import discord
-from discord.ext import commands
 import asyncio
-import aiohttp
 import datetime as dt
-import hashlib
 import os
 import pytz
-
-from my_constants import TOKEN, IMG_FOLDER, channel_horoscope
-from scraper import get_last_images, download_image
-from parse import parse_horoscope, reformat_horoscope
-from utils import convert_timedelta, md5
-
 import pickle
 from PIL import Image
 from collections import Counter
 import numpy as np
 
 from typing import Optional, List
+
+from my_constants import TOKEN, IMG_FOLDER, channel_horoscope
+from scraper import get_last_images, download_image
+from parse import parse_horoscope, reformat_horoscope
+from utils import convert_timedelta, md5
+
 
 manual  = """
 ```Help
