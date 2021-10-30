@@ -31,7 +31,7 @@ async def download_image(url: str, filename: Optional[str] = None):
     Args:
         url (str) : URL to get the img
         filename (str) : if provided, save the image as `filename`.
-            Ohterwise, use timestamp as filename
+            Otherwise, use timestamp as filename
 
     Return:
         Str : saved file name
