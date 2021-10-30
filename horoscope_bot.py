@@ -33,10 +33,10 @@ USERNAME = "RTL2officiel"
 true_width, true_height = 1181, 1716
 # True Horoscope has the following
 # color proportions
-#Counter({0: 134576, 1: 132231, 2: 28443})
+#Counter({0: 6470567, 2: 995063, 1: 638392})
 # Tested on a header of size 1181*250
 crop_height = 250
-true_prop   = np.array([134576, 132231, 28443])/(true_width * crop_height)
+true_prop   = np.array([6470567, 995063, 638392])/(true_width * crop_height)
 rtl2_header = np.array([0, 0, 1181, 250])
 
 kmeans = pickle.load(open("horoscope_kmeans.pickle", "rb"))
@@ -136,7 +136,7 @@ class HoroscopeDiscordBot(discord.Client):
         while not self.is_closed():
             today = now()
 
-            while today.weekday() in days and today.hour in hours
+            while today.weekday() in days and today.hour in hours \
                 and not await self.fetch_new_horoscope():
                 # while (it's time to fetch horoscope) AND (the horoscope has not been published yet)
                 # wait fetch_interval to not spam Twitter

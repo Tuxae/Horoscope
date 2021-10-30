@@ -6,7 +6,7 @@ import requests
 
 from typing import Optional, List
 
-def get_last_images(username: str, since: Optional[str] = None) -> List[str]
+def get_last_images(username: str, since: Optional[str] = None) -> List[str]:
     """Retrieve images from a twitter account"""
     c = twint.Config()
     c.Username = username
