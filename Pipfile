@@ -1,0 +1,25 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+discord = "*"
+asyncio = "*"
+aiohttp = "*"
+pytz = "*"
+numpy = "*"
+pandas = "*"
+tqdm = "*"
+pytesseract = "*"
+scikit-learn = "*"
+twint = {editable = true, ref = "origin/master", git = "https://github.com/twintproject/twint.git"}
+requests = "*"
+matplotlib = "*"
+Pillow = "*"
+nest-asyncio = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
