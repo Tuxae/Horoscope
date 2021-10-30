@@ -16,6 +16,9 @@ from scraper import get_last_images, download_image
 from parse import parse_horoscope, reformat_horoscope
 from utils import convert_timedelta, md5
 
+import nest_asyncio
+nest_asyncio.apply()
+
 
 manual  = """
 ```Help
@@ -30,14 +33,14 @@ TIMESTAMP_FORMAT = "%Y-%m-%d"
 USERNAME = "RTL2officiel"
 
 # top,left,bottow,right
-true_width, true_height = 1181, 1716
+true_width, true_height = 2362, 3431
 # True Horoscope has the following
 # color proportions
-#Counter({0: 6470567, 2: 995063, 1: 638392})
-# Tested on a header of size 1181*250
-crop_height = 250
-true_prop   = np.array([6470567, 995063, 638392])/(true_width * crop_height)
-rtl2_header = np.array([0, 0, 1181, 250])
+true_occurences = Counter({1: 960179, 0: 750054, 2: 179367})
+# Tested on a header of size true_width * crop_height
+crop_height = 800
+true_proportions = np.array([true_occurences[0], true_occurences[1], true_occurences[2]])/(true_width * crop_height)
+rtl2_header = np.array([0, 0, true_width, crop_height])
 
 kmeans = pickle.load(open("horoscope_kmeans.pickle", "rb"))
 
@@ -68,14 +71,14 @@ def is_horoscope(filename, verbose=False):
 
     # Step 2
     k = width/true_width
-    pixels = np.array(photo.crop(tuple(k*rtl2_header)).getdata())
+    pixels = np.array(photo.crop(tuple(k*rtl2_header))).reshape(-1, 3)
     occurences = Counter(kmeans.predict(pixels))
-    proportions = np.array([occ for occ in occurences.values()])/(k*true_width * k*crop_height)
+    proportions = np.array([occurences[0], occurences[1], occurences[2]])/(k*true_width * k*crop_height)
     if verbose:
         print(proportions, "Image proportions")
-        print(true_prop, "True proportions")
-        print(np.sum(np.abs(true_prop - proportions)), "Distance")
-    return np.sum(np.abs(true_prop - proportions)) < 0.03
+        print(true_proportions, "True proportions")
+        print(np.sum(np.abs(true_proportions - proportions)), "Distance")
+    return np.sum(np.abs(true_proportions - proportions)) < 0.03
 
 
 
@@ -194,12 +197,12 @@ class HoroscopeDiscordBot(discord.Client):
 
         print(f"[{now().ctime()}] - Fetch Horoscope")
         if img_href:
-            print(f"Lien fourni par l'utilisateur : {img_href}.")
+            print(f"[{now().ctime()}] - Lien fourni par l'utilisateur : {img_href}.")
             img_hrefs = [img_href]
         else:
-            print("Récupération des dernières images depuis Twitter.")
+            print(f"[{now().ctime()}] - Récupération des dernières images depuis Twitter.")
             today = now().strftime("%Y-%m-%d")
-            img_hrefs = await get_last_images(username=USERNAME, since=today)
+            img_hrefs = get_last_images(username=USERNAME, since=today)
 
         files = sorted(os.listdir(IMG_FOLDER + "/"), reverse=True)
 
@@ -219,7 +222,7 @@ class HoroscopeDiscordBot(discord.Client):
                 old_image = ""
 
             print(f"Test de l'image {img_href}")
-            if is_horoscope(new_image):
+            if is_horoscope(new_image, verbose=True):
                 print("C'est un horoscope !")
                 if md5(new_image) == md5(old_image):
                     print("C'est l'horoscope d'hier")
