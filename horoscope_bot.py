@@ -250,6 +250,9 @@ class HoroscopeDiscordBot(discord.Client):
         if today.weekday() == 4:
             # it's Friday -> wait two more days
             days_to_wait += 2
+        if today.weekday() == 5:
+            # it's Saturday -> wait one more day
+            days_to_wait += 1
         next_day = today.replace(hour=hours[0],minute=0,second=0,microsecond=0) + dt.timedelta(days=days_to_wait)
         return next_day-today
 
