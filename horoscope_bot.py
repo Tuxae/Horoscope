@@ -146,7 +146,7 @@ class HoroscopeDiscordBot(discord.Client):
                 await asyncio.sleep(fetch_interval)
 
             time_to_wait = self.get_time_to_wait(hours).total_seconds()
-            time_to_wait_message = f"[{now().ctime()}] -" +\
+            time_to_wait_message = f"[{now().ctime()}] - " +\
                 f"Reprise de l'activité dans {time_to_wait} secondes."
             print(time_to_wait_message)
 
@@ -166,7 +166,7 @@ class HoroscopeDiscordBot(discord.Client):
             img_href = message.content.split(" ")[-1]
             if img_href.startswith("http") and await self.fetch_new_horoscope(img_href=img_href):
                 time_to_wait = self.get_time_to_wait([10,11,12]).total_seconds()
-                time_to_wait_message = f"[{now().ctime()}] -" +\
+                time_to_wait_message = f"[{now().ctime()}] - " +\
                     f"Reprise de l'activité dans {time_to_wait} secondes."
                 print(time_to_wait_message)
                 await asyncio.sleep(time_to_wait)
