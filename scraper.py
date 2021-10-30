@@ -11,6 +11,7 @@ def get_last_images(username: str, since: Optional[str] = None) -> List[str]:
     c = twint.Config()
     c.Username = username
     c.Store_object = True
+    c.Hide_output = True
 
     if since:
         c.Since = since
