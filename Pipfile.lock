@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "f1c1c82d0b2a186ced6726a5824163925f7d9cb6b7767253152ada72bbfabd8d"
+            "sha256": "d1b828526ecb078f9c7a68bc49596878d06115a9da2017e8acf7deb8860f97c4"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -226,6 +226,13 @@
             "markers": "python_version >= '3.6'",
             "version": "==0.11.0"
         },
+        "dataclasses": {
+            "hashes": [
+                "sha256:454a69d788c7fda44efd71e259be79577822f5e3f53f029a22d08004e951dc9f",
+                "sha256:6988bd2b895eef432d562370bb707d540f32f7360ab13da45340101bc2307d84"
+            ],
+            "version": "==0.6"
+        },
         "discord": {
             "hashes": [
                 "sha256:248d728356e149c818a81b94659047a19305ea1623d4810bbb342f6b7df55f36",
@@ -448,6 +455,14 @@
             "markers": "python_version >= '3.6'",
             "version": "==5.2.0"
         },
+        "nest-asyncio": {
+            "hashes": [
+                "sha256:76d6e972265063fe92a90b9cc4fb82616e07d586b346ed9d2c89a4187acea39c",
+                "sha256:afc5a1c515210a23c461932765691ad39e8eba6551c055ac8d5546e69250d0aa"
+            ],
+            "index": "pypi",
+            "version": "==1.5.1"
+        },
         "numpy": {
             "hashes": [
                 "sha256:043e83bfc274649c82a6f09836943e4a4aebe5e33656271c7dbf9621dd58b8ec",
@@ -637,7 +652,7 @@
                 "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86",
                 "sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==2.8.2"
         },
         "python-socks": {
@@ -735,7 +750,7 @@
                 "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926",
                 "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==1.16.0"
         },
         "soupsieve": {
@@ -763,11 +778,9 @@
             "version": "==4.62.3"
         },
         "twint": {
-            "hashes": [
-                "sha256:b3b7671997e31ea5dff9f4cca0f83add07c3163fd7ab1dc8e44f9110eeb1965d"
-            ],
-            "index": "pypi",
-            "version": "==2.1.20"
+            "editable": true,
+            "git": "https://github.com/twintproject/twint.git",
+            "ref": "e7c8a0c764f6879188e5c21e25fb6f1f856a7221"
         },
         "typing-extensions": {
             "hashes": [

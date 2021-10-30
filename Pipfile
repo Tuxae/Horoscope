@@ -13,10 +13,11 @@ pandas = "*"
 tqdm = "*"
 pytesseract = "*"
 scikit-learn = "*"
-twint = "*"
+twint = {editable = true, ref = "origin/master", git = "https://github.com/twintproject/twint.git"}
 requests = "*"
 matplotlib = "*"
 Pillow = "*"
+nest-asyncio = "*"
 
 [dev-packages]
 
