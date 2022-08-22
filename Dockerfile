@@ -15,4 +15,6 @@ RUN pipenv install --dev --system --deploy
 RUN apt-get update &&\
     apt-get install -y tesseract-ocr tesseract-ocr-fra
 
+RUN pip3 install doctr["torch"]
+
 CMD python3 -u horoscope_bot.py

@@ -1,9 +1,19 @@
 import hashlib
 import os
+import datetime as dt
+import pytz
 from matplotlib import pyplot as plt
 from matplotlib import patches
 from PIL import Image
 import numpy as np
+
+tz_paris = pytz.timezone("Europe/Paris")
+
+def log(message: str):
+    print(f"[{now().ctime()}] - {message}")
+
+def now():
+    return dt.datetime.now().astimezone(tz_paris)
 
 def disp_image_with_rectangle(path, coords):
     img = np.array(Image.open(path))

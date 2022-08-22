@@ -2,6 +2,7 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 from itertools import repeat
 import re
+from pathlib import Path
 
 import pandas as pd
 pd.options.mode.chained_assignment = None
@@ -56,6 +57,7 @@ def read_crop(img, crop_region=None, pb=None):
     Args:
         img (PIL.Image): Image to read from.
         crop_region (tuple of ints): Coordinates of the rectangle containing the text to read.
+        pb (tqdm progress bar)
     
     Returns:
         str: The text as read by Tesseract.
@@ -232,10 +234,10 @@ def parse_horoscope(img, threads=12, verbose=True):
          'poisson': ('bronze',
           'Votre corps réclame une pause, ne tirez \\pas trop sur la corde.')}
     """
-    if isinstance(img, str):
+    if isinstance(img, str) or isinstance(img, Path):
         img = Image.open(img)
     img.load()
-    
+ 
     # Rescale regions if necessary
     factor =  img.width/true_width
     print("scale factor:", factor)
@@ -243,13 +245,13 @@ def parse_horoscope(img, threads=12, verbose=True):
         scaled_regions = scale_regions(factor, regions)
     else:
         scaled_regions = regions
-    
+
     # Read and clean up texts
     texts = read_texts(img, threads=threads, regions=scaled_regions, verbose=verbose)
     texts = {sign: clean_up_text(text) for sign, text in texts.items()}
-    
+
     stars = find_star_colors(img, regions=scaled_regions, robust=True)
-    
+ 
     keys = texts.keys()
     values = zip(stars.values(), texts.values())
     out = dict(zip(keys, values))
