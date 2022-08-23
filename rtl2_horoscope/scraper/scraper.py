@@ -78,16 +78,13 @@ class Scraper:
     def is_horoscope_of_the_day(self, image) -> bool:
 
         img = np.array(Image.open(image))
-        text = self.model([img]).render()
+        excerpt = self.model([img]).render().lower()[:300]
 
         today = now()
         quantum = today.strftime("%d")
         day = days[today.strftime("%A").lower()]
 
-        quantum = "22"
-        day = "lundi"
-
-        return (day in text and quantum in text)
+        return (day in excerpt or quantum in excerpt)
 
     def get_last_images(self, **kwargs) -> List[str]:
         """Function to get images hrefs from Social Media"""

@@ -84,10 +84,6 @@ class HoroscopeDiscordBot(discord.Client):
         assert max(hours) <= 23, "Need number between 0 and 23"
         assert min(hours) >= 0, "Need number between 0 and 23"
 
-        print("Ici")
-        await self.fetch_new_horoscope()
-        print("La")
-
         while not self.is_closed():
             today = now()
 
