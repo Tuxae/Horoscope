@@ -2,6 +2,10 @@ FROM python:3.9.6-buster
 
 WORKDIR /root/Horoscope
 
+# INSTALL DEPENDENCIES FOR DOCTR
+RUN apt-get update \
+ && apt-get install -y libgl1-mesa-dev libsm6 libxext6 libxrender-dev
+
 # INSTALL PIPENV
 RUN pip3 install pipenv
 
@@ -15,6 +19,4 @@ RUN pipenv install --dev --system --deploy
 RUN apt-get update &&\
     apt-get install -y tesseract-ocr tesseract-ocr-fra
 
-RUN pip3 install doctr["torch"]
-
-CMD python3 -u horoscope_bot.py
+CMD python3 -u bot.py
