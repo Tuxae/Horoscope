@@ -18,6 +18,9 @@ requests = "*"
 matplotlib = "*"
 Pillow = "*"
 nest-asyncio = "*"
+selenium = "*"
+python-doctr = "*"
+torch = "*"
 
 [dev-packages]
 
