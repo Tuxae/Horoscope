@@ -6,7 +6,7 @@ from rtl2_horoscope.scraper import Scraper
 from rtl2_horoscope.utils import log
 
 ALBUM_URL = "https://www.facebook.com/pg/rtl2/photos/?tab=album&album_id=248389291078&ref=page_internal"
-WEBDRIVER_URL = 'http://192.168.0.54:4444/wd/hub'
+WEBDRIVER_URL = 'http://selenium-horoscope:4444/wd/hub'
 
 class FacebookScraper(Scraper):
 

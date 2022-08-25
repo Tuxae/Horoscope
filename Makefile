@@ -1,5 +1,10 @@
 build:
-	docker build -t horoscope .
+	docker-compose build
+up:
+	docker-compose -p horoscope up -d
+down:
+	docker-compose -p horoscope down -t 0
+
 run:
 	docker run -d -v $(PWD):/root/Horoscope --name horoscope horoscope
 build_lock:
