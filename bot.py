@@ -34,8 +34,9 @@ class HoroscopeDiscordBot(discord.Client):
         super().__init__(*args, **kwargs)
         self.scraper = FacebookScraper()
 
+    async def setup_hook(self):
         # create the background task and run it in the background
-        self.bg_task = self.loop.create_task(self.job())
+        self.loop.create_task(self.job())
 
     async def on_ready(self):
         """Initial check"""
@@ -164,5 +165,7 @@ class HoroscopeDiscordBot(discord.Client):
         return next_day-today
 
 if __name__ == "__main__":
-    client = HoroscopeDiscordBot()
+    intents = discord.Intents.default()
+    intents.message_content = True
+    client = HoroscopeDiscordBot(intents=intents)
     client.run(TOKEN)
