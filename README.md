@@ -1,8 +1,42 @@
-# Horoscope scraping
-Details are available in ``scraper.py``. It's mainly based on mobile web app to ease web scraping.
+# Tuxae Horoscope
 
-# Horoscope parsing
-Functions to parse a horoscope image are found in `parse.py`.
+![Discord Horoscope](Discord.png)
+
+## Usage
+
+You need `docker` and `docker-compose` as well. Note: you may need to edit the `Makefile` to use
+`docker compose` instead of `docker-compose`.
+
+Using the Makefile (`sudo apt install make` if you don't have `make` command):
+
+```bash
+make up
+```
+
+It will start two containers: one is the scraper and the other is the Discord Bot
+
+To stop the bot immediately:
+
+```bash
+make down
+```
+
+## Update Docker Image
+
+The Docker Image `horoscope-bot` relies on a `Pipfile`. We already provide a `Pipfile.lock` in the repository.
+If needed, you can update `Pipfile.lock` to upgrade some versions.
+
+To do so,
+```bash
+make build_lock  # Build a Docker Image to run pipenv lock inside
+make lock
+```
+
+## Horoscope scraping
+Details are available in ``scraper`` folder. It's mainly based on mobile web app to ease web scraping.
+
+## Horoscope parsing
+Functions to parse a horoscope image are found in `rtl2_horoscope/parse.py`.
 
 ## Requirements
 Parsing functionalities require installing Tesseract OCR on your computer as well as the `pytesseract` package.
@@ -58,9 +92,3 @@ Usage example:
      'poisson': ('bronze',
       'Votre corps réclame une pause, ne tirez \\pas trop sur la corde.')}
 
-## Start the bot
-
-You can launch the bot in a screen :
-```
-python3 horoscope_bot.py
-```
