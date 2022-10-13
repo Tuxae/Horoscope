@@ -1,4 +1,5 @@
 import io
+import logging
 import pickle
 import datetime
 import aiohttp
@@ -13,7 +14,7 @@ import numpy as np
 
 from my_constants import IMG_FOLDER
 from doctr.models import ocr_predictor
-from rtl2_horoscope.utils import log, now
+from rtl2_horoscope.utils import now
 
 # top,left,bottow,right
 true_width, true_height = 2362, 3431
@@ -59,10 +60,10 @@ class Scraper:
         photo = Image.open(fp)
         width, height = photo.size
 
-        log(f"Image size : {width}x{height}")
+        logging.info(f"Image size : {width}x{height}")
         if abs(width/true_width - height/true_height) > 0.05 :
             return False
-        log(f"Ratio de l'image correct.")
+        logging.info(f"Ratio de l'image correct.")
 
         # Step 2
         k = width/true_width
@@ -70,9 +71,9 @@ class Scraper:
         occurences = Counter(kmeans.predict(pixels))
         proportions = np.array([occurences[0], occurences[1], occurences[2]])/(k*true_width * k*crop_height)
         if verbose:
-            log(f"Image proportions: {proportions}")
-            log(f"True proportions: {true_proportions}")
-            log(f"Distance: {np.sum(np.abs(true_proportions - proportions))}")
+            logging.info(f"Image proportions: {proportions}")
+            logging.info(f"True proportions: {true_proportions}")
+            logging.info(f"Distance: {np.sum(np.abs(true_proportions - proportions))}")
         return np.sum(np.abs(true_proportions - proportions)) < 0.05
 
     def is_horoscope_of_the_day(self, image) -> bool:
@@ -103,19 +104,19 @@ class Scraper:
             Path to Horoscope image on Disk
         """
 
-        log("Fetch Horoscope")
+        logging.info("Fetch Horoscope")
         if img_href:
-            log(f"Lien fourni par l'utilisateur : {img_href}.")
+            logging.info(f"Lien fourni par l'utilisateur : {img_href}.")
             img_hrefs = [img_href]
         else:
-            log(f"Récupération des dernières images depuis {self.social_media.title()}.")
+            logging.info(f"Récupération des dernières images depuis {self.social_media.title()}.")
             today = now().strftime("%Y-%m-%d")
             img_hrefs = self.get_last_images(**kwargs)
 
         if len(img_hrefs) > 0:
-            log("Téléchargement des images...")
+            logging.info("Téléchargement des images...")
         else:
-            log("Pas d'images aujourd'hui !")
+            logging.info("Pas d'images aujourd'hui !")
 
         for img_href in img_hrefs:
             image = await self.download_image(img_href)
@@ -125,20 +126,20 @@ class Scraper:
                 # Skip it
                 continue
 
-            log(f"Test de l'image {img_href}")
+            logging.info(f"Test de l'image {img_href}")
             if self.is_horoscope(image, verbose=True):
-                log("C'est un horoscope !")
+                logging.info("C'est un horoscope !")
                 if self.is_horoscope_of_the_day(image):
-                    log("C'est l'horoscope du jour")
+                    logging.info("C'est l'horoscope du jour")
                     # Stop research
                     filename = Path(IMG_FOLDER) / ( now().strftime("%Y-%m-%d") + ".jpg")
                     with open(filename, "wb") as f:
                         f.write(image.getbuffer())
                     return filename
                 else:
-                    log("Ce n'est pas l'horoscope du jour")
+                    logging.info("Ce n'est pas l'horoscope du jour")
             else:
-                log("Ce n'est pas un nouveau horoscope")
+                logging.info("Ce n'est pas un nouveau horoscope")
                 # Continue research
                 await asyncio.sleep(1)
 

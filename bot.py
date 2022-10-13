@@ -1,10 +1,16 @@
 # coding: utf8
 import discord
+import logging
 import asyncio
 import re
 import os
 import pickle
 import datetime as dt
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s | %(name)s | %(levelname)s | %(message)s'
+)
 
 from PIL import Image
 from typing import Optional, List
@@ -12,7 +18,7 @@ from typing import Optional, List
 from my_constants import TOKEN, IMG_FOLDER, channel_horoscope
 from rtl2_horoscope.scraper.facebook import FacebookScraper
 from rtl2_horoscope.parse import parse_horoscope, reformat_horoscope
-from rtl2_horoscope.utils import now, log
+from rtl2_horoscope.utils import now
 
 #import nest_asyncio
 #nest_asyncio.apply()
@@ -41,14 +47,14 @@ class HoroscopeDiscordBot(discord.Client):
     async def on_ready(self):
         """Initial check"""
         if not os.path.isdir(IMG_FOLDER):
-            log(f"Création du dossier {IMG_FOLDER}")
+            logging.info(f"Création du dossier {IMG_FOLDER}")
             os.mkdir(IMG_FOLDER)
 
-        log("Bot ready :-)")
-        log('Logged in as')
-        log(self.user.name)
-        log(self.user.id)
-        log('------')
+        logging.info("Bot ready :-)")
+        logging.info('Logged in as')
+        logging.info(self.user.name)
+        logging.info(self.user.id)
+        logging.info('------')
 
     def is_for_bot(self, message) -> bool:
         """Check if the message is for the bot.
@@ -96,7 +102,7 @@ class HoroscopeDiscordBot(discord.Client):
 
             time_to_wait = self.get_time_to_wait(hours).total_seconds()
             time_to_wait_message = f"Reprise de l'activité dans {time_to_wait} secondes."
-            log(time_to_wait_message)
+            logging.info(time_to_wait_message)
 
             await asyncio.sleep(time_to_wait)
 
@@ -115,7 +121,7 @@ class HoroscopeDiscordBot(discord.Client):
             if img_href.startswith("http") and await self.fetch_new_horoscope(img_href=img_href):
                 time_to_wait = self.get_time_to_wait([10,11,12]).total_seconds()
                 time_to_wait_message = f"Reprise de l'activité dans {time_to_wait} secondes."
-                log(time_to_wait_message)
+                logging.info(time_to_wait_message)
                 await asyncio.sleep(time_to_wait)
 
         if self.command(message, "last"):
@@ -128,10 +134,10 @@ class HoroscopeDiscordBot(discord.Client):
 
     async def parse_and_send_horoscope(self, filename):
         """Parse the image and send the image and the text found through OCR"""
-        log("OCR : en cours.")
+        logging.info("OCR : en cours.")
         horoscope_dict = parse_horoscope(filename, threads=1)
         horoscope_str = reformat_horoscope(horoscope_dict)
-        log("OCR : terminé.")
+        logging.info("OCR : terminé.")
         await self.get_channel(channel_horoscope).send(file=discord.File(filename))
         await self.get_channel(channel_horoscope).send(horoscope_str)
 

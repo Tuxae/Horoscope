@@ -9,9 +9,6 @@ import numpy as np
 
 tz_paris = pytz.timezone("Europe/Paris")
 
-def log(message: str):
-    print(f"[{now().ctime()}] - {message}")
-
 def now():
     return dt.datetime.now().astimezone(tz_paris)
 

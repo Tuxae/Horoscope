@@ -3,7 +3,6 @@ import twint
 from typing import Optional, List
 
 from rtl2_horoscope.scraper import Scraper
-from rtl2_horoscope.utils import log
 
 USERNAME = "RTL2officiel"
 

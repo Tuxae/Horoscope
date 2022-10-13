@@ -1,9 +1,10 @@
+import logging
+
 from selenium import webdriver
 from bs4 import BeautifulSoup
 from typing import List
 
 from rtl2_horoscope.scraper import Scraper
-from rtl2_horoscope.utils import log
 
 ALBUM_URL = "https://www.facebook.com/pg/rtl2/photos/?tab=album&album_id=248389291078&ref=page_internal"
 WEBDRIVER_URL = 'http://selenium-horoscope:4444/wd/hub'
@@ -17,15 +18,15 @@ class FacebookScraper(Scraper):
 
     def get_last_images(self, **kwargs) -> List[str]:
 
-        log("Initialize Webdriver")
+        logging.info("Initialize Webdriver")
         driver = webdriver.Remote(
             self.webdriver_url,
             options=webdriver.ChromeOptions()
         )
         driver.set_window_size(1280, 1024)
-        log(f"Get {self.album_url} ...")
+        logging.info(f"Get {self.album_url} ...")
         driver.get(self.album_url)
-        log("Done")
+        logging.info("Done")
         page_source = driver.page_source
         driver.close()
 
